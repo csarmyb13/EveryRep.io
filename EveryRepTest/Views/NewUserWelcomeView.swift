@@ -8,33 +8,47 @@
 import SwiftUI
 
 struct NewUserWelcomeView: View {
-    @State private var showingUserProfile = false
+    @State private var isShowingUserProfile = false
     
     var body: some View {
+        NavigationView{
         ZStack {
             Color.black.ignoresSafeArea()
             
             VStack {
-            
+                Text("Time To Grind!")
+                    .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
+                    .font(.system(size: 50))
                 Image("Logo_Skeleton")
+                Text("Are you ready?")
+                    .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
+                    .font(.system(size: 50))
+                
                 Spacer()
-                Button(action: {
-                    showingUserProfile = true
-                }) {
-                    Text("Welcome!")
-                        .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
-                        .frame(width: 300, height: 50)
-                        .background(Color(red: 51/255, green: 102/255, blue: 102/255))
-                        .cornerRadius(10)
+                
+                NavigationLink(
+                    destination: UserProfileContent(),
+                    isActive: $isShowingUserProfile) {
+                        Button(action: {
+                            isShowingUserProfile = true
+                        }) {
+                            Text("Welcome!")
+                                .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
+                                .frame(width: 300, height: 50)
+                                .background(Color(red: 51/255, green: 102/255, blue: 102/255))
+                                .cornerRadius(10)
+                        }
+                    }
                 }
+                
                 .padding()
                 Spacer()
                 
-                NavigationLink(destination: UserProfile(), isActive: $showingUserProfile) {
-                    EmptyView()
-                }
+                .navigationBarBackButtonHidden(true)
             }
+            .navigationBarBackButtonHidden(true)
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
@@ -43,4 +57,3 @@ struct NewUserWelcomeView_Previews: PreviewProvider {
         NewUserWelcomeView()
     }
 }
-

@@ -8,6 +8,8 @@
 import SwiftUI
 import Firebase
 
+
+
 struct SignupView: View {
     @State private var email = ""
     @State private var username = ""
@@ -15,7 +17,9 @@ struct SignupView: View {
     @State private var secondPassword = ""
     @State private var isUsernameTaken = false
     @State private var isEmailTaken = false
-    @State private var showingWelcomeView = false
+    @State private var showingUserInfo = false
+    
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ZStack {
@@ -27,6 +31,7 @@ struct SignupView: View {
                 Text("Sign Up")
                     .font(.largeTitle)
                     .fontWeight(.bold)
+                    .foregroundColor(.black)
                 
                 HStack {
                     Image("Apple")
@@ -38,6 +43,7 @@ struct SignupView: View {
                     
                     Text("Sign up with Apple")
                         .font(.title2)
+                        .foregroundColor(.black)
                     
                     Spacer()
                 }
@@ -57,6 +63,7 @@ struct SignupView: View {
                     
                     Text("Sign up with Google")
                         .font(.title2)
+                        .foregroundColor(.black)
                     
                     Spacer()
                 }
@@ -76,6 +83,7 @@ struct SignupView: View {
                     
                     Text("Sign up with Facebook")
                         .font(.title2)
+                        .foregroundColor(.black)
                     
                     Spacer()
                 }
@@ -87,6 +95,7 @@ struct SignupView: View {
                 
                 Text("Or")
                     .font(.system(size: 20))
+                    .foregroundColor(.black)
                 
                 VStack(spacing: 20) {
                     TextField("Email", text: $email)
@@ -100,7 +109,6 @@ struct SignupView: View {
                                         .frame(maxWidth: .infinity, alignment: .trailing)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, -10)
-                                        
                                 }
                             }
                         )
@@ -116,7 +124,6 @@ struct SignupView: View {
                                         .frame(maxWidth: .infinity, alignment: .trailing)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 10)
-                                    
                                 }
                                 Spacer()
                             }
@@ -143,14 +150,23 @@ struct SignupView: View {
                 .padding()
                 
                 NavigationLink(
-                    destination: NewUserWelcomeView(),
-                    isActive: $showingWelcomeView,
+                    destination: UserInfo(),
+                    isActive: $showingUserInfo,
                     label: {
                         EmptyView()
                     })
             }
         }
     }
+    
+    
+    func isUsernameValid(_ username: String) -> Bool {
+        let usernameRegex = "^[a-zA-Z0-9_]{7,18}$"
+        let usernamePredicate = NSPredicate(format: "SELF MATCHES %@", usernameRegex)
+        let containsSpecialCharacters = username.rangeOfCharacter(from: CharacterSet(charactersIn: "@#\\$%&*()^<>!±")) != nil
+        return usernamePredicate.evaluate(with: username) && !containsSpecialCharacters
+    }
+    
     func checkEmailAvailability() {
         let db = Firestore.firestore()
         db.collection("Users").whereField("email", isEqualTo: email).getDocuments { (querySnapshot, error) in
@@ -174,6 +190,7 @@ struct SignupView: View {
             }
         }
     }
+    
     func checkUsernameAvailability() {
         let db = Firestore.firestore()
         db.collection("Users").whereField("username", isEqualTo: username).getDocuments { (querySnapshot, error) in
@@ -184,64 +201,81 @@ struct SignupView: View {
             
             guard let documents = querySnapshot?.documents else {
                 // Username is available, proceed with creating the account
-                isUsernameTaken = false
+                if isUsernameValid(username) {
+                    createAccount()
+                } else {
+                    print("Username is invalid")
+                }
                 return
             }
             
             if documents.isEmpty {
                 // Username is available, proceed with creating the account
-                isUsernameTaken = false
+                if isUsernameValid(username) {
+                    createAccount()
+                } else {
+                    print("Username is invalid")
+                }
             } else {
-                isUsernameTaken = true
                 print("Username is already in use")
             }
         }
     }
     func createUser() {
-        if !isUsernameTaken && !isEmailTaken {
-            if email != "" && username != "" && password != "" && secondPassword != "" {
-                if password == secondPassword {
-                    if password.count >= 6 { // Check if the password has at least 6 characters
-                        Auth.auth().createUser(withEmail: email, password: password) { (res, err) in
-                            if let err = err {
-                                print(err)
-                                return
+            if !isUsernameTaken && !isEmailTaken {
+                if email != "" && username != "" && password != "" && secondPassword != "" {
+                    if password == secondPassword {
+                        if password.count >= 6 { // Check if the password has at least 6 characters
+                            Auth.auth().createUser(withEmail: email, password: password) { (res, err) in
+                                if let err = err {
+                                    print(err)
+                                    return
+                                }
+                                // Account creation successful
+                                createUserInfo()
+                                showingUserInfo = true
                             }
-                            // Account creation successful
-                            createUserInfo()
-                            showingWelcomeView = true
+                        } else {
+                            print("Password should have at least 6 characters")
                         }
                     } else {
-                        print("Password should have at least 6 characters")
+                        print("Passwords do not match")
                     }
                 } else {
-                    print("Passwords do not match")
+                    print("Please fill in all fields")
                 }
-            } else {
-                print("Please fill in all fields")
             }
         }
-        
-        
-        func createUserInfo() {
-            if let user = Auth.auth().currentUser {
-                let db = Firestore.firestore()
-                let userID = user.uid
-                db.collection("Users").document("\(userID)").setData(["email": email, "username": username, "password": password, userID: userID]) { error in
-                    if let error = error {
-                        print("Error creating user info: \(error)")
-                    } else {
-                        // User info creation successful
-                        // Proceed to next screen or perform desired action
-                    }
+    func createAccount() {
+        Auth.auth().createUser(withEmail: email, password: password) { (res, err) in
+            if let err = err {
+                print(err)
+                return
+            }
+            // Account creation successful
+            createUserInfo()
+            showingUserInfo = true
+        }
+    }
+    
+    func createUserInfo() {
+        if let user = Auth.auth().currentUser {
+            let db = Firestore.firestore()
+            let userID = user.uid
+            db.collection("Users").document("\(userID)").setData(["email": email, "username": username, "password": password, "userID": userID]) { error in
+                if let error = error {
+                    print("Error creating user info: \(error)")
+                } else {
+                    // User info creation successful
+                    // Proceed to next screen or perform desired action
                 }
             }
         }
     }
-    
-    struct SignupView_Previews: PreviewProvider {
-        static var previews: some View {
-            SignupView()
-        }
+}
+
+struct SignupView_Previews: PreviewProvider {
+    static var previews: some View {
+        SignupView()
     }
 }

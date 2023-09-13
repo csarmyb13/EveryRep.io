@@ -9,15 +9,30 @@ import SwiftUI
 import Firebase
 
 @main
-struct YourAppNameApp: App {
+struct EverRepTest: App {
+    @StateObject private var userSettings = UserSettings()
+    
     init() {
         FirebaseApp.configure()
     }
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if let storedToken = TokenManager.shared.getToken() {
+                // A valid token exists, so the user is already authenticated.
+                // You can consider automatically navigating to a protected part of your app.
+                // For example, if there's a DashboardView, you can do:
+                UserProfileContent()
+                    .environmentObject(userSettings)
+            } else {
+                // No stored token, user needs to log in.
+                // Show the login view.
+                LoginView()
+                    .environmentObject(userSettings)
+            }
         }
     }
+    
 }
+
 
