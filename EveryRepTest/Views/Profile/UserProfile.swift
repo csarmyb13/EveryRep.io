@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Firebase
-import FirebaseFirestore
 import FirebaseStorage
 import FirebaseAuth
 import MobileCoreServices
@@ -87,22 +86,28 @@ struct BannerView: View {
                             .resizable()
                             .frame(width: 120, height: 120)
                             .clipShape(Circle())
+                            .aspectRatio(contentMode: .fill)
+                            .clipped()
                     } else {
                         // Display default profile image
                         Image("Blank_Profile_Picture")
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .aspectRatio(contentMode: .fill)
                             .frame(width: 120, height: 120)
                             .clipShape(Circle())
                             .overlay(
                                 Circle().stroke(Color(red: 42/255, green: 58/255, blue: 47/255), lineWidth: 5)
                             )
+                        
+                        
                     }
                 }
                 .sheet(isPresented: $isPickerShowing) {
                     // Image picker
                     ImagePicker(selectedImage: $selectedImage, isPickerShowing: $isPickerShowing)
                 }
+                
+                
                 Spacer()
                 
                 VStack {

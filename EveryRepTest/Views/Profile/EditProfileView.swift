@@ -30,11 +30,13 @@ struct EditProfileView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
                     Spacer()
                     
                     Text("Edit Profile")
                         .font(.subheadline)
                         .fontWeight(.semibold)
+                        .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
                     
                     Spacer()
                     
@@ -44,10 +46,13 @@ struct EditProfileView: View {
                         Text("Done")
                             .font(.subheadline)
                             .fontWeight(.bold)
+                            .foregroundColor(Color(red: 204/255, green: 199/255, blue: 175/255))
+                        
                     }
-
+                    
                 }
                 .padding()
+                .background(Color(red: 42/255, green: 58/255, blue: 47/255))
                 
                 Divider()
             }
@@ -65,7 +70,7 @@ struct EditProfileView: View {
                             .clipShape(Circle())
                     }
                     else{
-                        Image(systemName: "person")
+                        Image("Blank_Profile_Picture")
                             .resizable()
                             .frame(width: 120, height: 120)
                             .foregroundColor(.white)
@@ -96,6 +101,7 @@ struct EditProfileView: View {
                             .cornerRadius(10)
                     }
         }
+        .background(Color(red: 204/255, green: 199/255, blue: 175/255))
         
     }
     
